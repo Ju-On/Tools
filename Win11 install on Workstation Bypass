@@ -1,0 +1,22 @@
+Create Bypass Check files in Registry Editor
+
+Step 1: Press Shift + F10 and type regedit after X:\Sources. Then hit Enter button on the keyboard.
+
+Step 2: Extend HKEY_LOCAL_MACHINE folder and SYSTEM folder. Right-click on Setup folder, and select New to create a new Key.
+
+Step 3: Name the new key as LabConfig. Enter Labconfig folder and right-click on the blank to create a new DWORD(32-bit) Value.
+
+Step 4: Name the DWORD(32-bit) Value as BypassCPUCheck.
+
+Step 5: Right-click on BypassCPUCheck and choose Modify.
+
+Step 6: Adjust the Value data of BypassCPUCheck to 1 and click on OK.
+
+Step 7: Right-click on the blank and create another 3 new DWORD(32-bit) Value files one by one. Name them as 
+BypassTPMCheck, BypassRAMCheck, BypassSecureBootCheck and adjust their Value data into 1 respectively. Then quit this Windows.
+
+Step 8: Close the Windows Command Prompt to go on Windows Setup.
+
+Step 9: Click Install now and you will successfully continue installing Windows 11 VMware without the error "this PC Can't Run Windows 11" on VMware.
+
+Source: https://www.isumsoft.com/windows-11/this-pc-cannot-run-windows-11-on-vmware.html
