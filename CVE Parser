@@ -1,0 +1,35 @@
+
+import re
+
+# Initialize an empty set to store unique CVE strings
+cve_set = set()
+
+print("Paste to filter here; (type 'gee' if gucci):")
+
+while True:
+    # Prompt the user to enter a report line
+    report_line = input()
+
+    # Check if the user wants to stop entering lines
+    if report_line.lower() == 'gee':
+        break
+
+    # Define a regular expression pattern to match CVE strings
+    cve_pattern = r'\b[cC][vV][eE]-\d+-\d+\b'
+
+    # Use re.findall to find all matching CVE strings in the report line
+    cve_matches = re.findall(cve_pattern, report_line)
+
+    # Add the CVE strings found in this line to the cve_set
+    cve_set.update(cve_matches)
+
+# Convert the set back to a sorted list for printing
+cve_list = sorted(list(cve_set))
+
+# Print all the extracted unique CVE strings with numbers
+if cve_list:
+    print("CVEs Found:")
+    for i, cve in enumerate(cve_list, 1):
+        print(f"{i}. {cve}")
+else:
+    print("No CVEs Found!")
