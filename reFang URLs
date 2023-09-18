@@ -1,0 +1,35 @@
+import urllib.parse
+
+def fang_url(defanged_url):
+    # Replace '[.]' in the netloc with '.'
+    fanged_url = defanged_url.replace('[.]', '.')
+
+    # Decode the path and query components
+    parsed_url = urllib.parse.urlparse(fanged_url)
+    path = urllib.parse.unquote(parsed_url.path)
+    query = urllib.parse.unquote(parsed_url.query)
+
+    # Reconstruct the fanged URL
+    fanged_url = urllib.parse.urlunparse((
+        parsed_url.scheme,
+        parsed_url.netloc,
+        path,
+        '',
+        query,
+        ''
+    ))
+
+    return fanged_url
+
+# Get user input for the defanged URL
+defanged_url = input("Enter a defanged URL to fang: ")
+
+# Confirm with the user before fanging
+confirmation = input(f"Do you want to fang the URL '{defanged_url}'? (yes/no): ")
+
+if confirmation.lower() == 'yes':
+    # Fang the URL
+    fanged = fang_url(defanged_url)
+    print("Fanged URL:", fanged)
+else:
+    print("URL fanging canceled.")
