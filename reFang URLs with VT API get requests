@@ -1,10 +1,15 @@
 import urllib.parse
 import re
 import requests
+import whois
+from email.utils import parsedate_to_datetime
 import vt
 
 # Define your VirusTotal API key here
-VIRUSTOTAL_API_KEY = 'API KEY'
+VIRUSTOTAL_API_KEY = 'key'
+
+# Define your URLScan.io API key here
+URLSCAN_API_KEY = 'key'
 
 def fang_url(defanged_url):
     # Replace '[.]' in the netloc with '.'
@@ -33,11 +38,15 @@ def fang_url(defanged_url):
 
 def extract_urls(text):
     # Regular expression to match URLs, including email addresses with '[.]' in the domain
-    url_pattern = r'(?:https?://)?(?:www\.)?(?:[a-zA-Z0-9.-]+(?:\[\.\][a-zA-Z0-9.-]+)+|(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\[\.\][a-zA-Z]{2,}))'
+    url_pattern = r'(?:https?://)?(?:www\.)?(?:[a-zA-Z0-9.-]+(?:\[\.\][a-zA-Z0-9.-]+)+|(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\[\.\][a-zA-Z]{2,}))(?=\s|$)'
 
     # Find all URLs in the text
     urls = re.findall(url_pattern, text)
-    return urls
+
+    # Filter out URLs that contain '@' (email addresses)
+    filtered_urls = [url for url in urls if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\[\.\][a-zA-Z]{2,}$', url)]
+
+    return filtered_urls
 
 def get_virustotal_file_report(hash_value):
     # Initialize the VirusTotal client
@@ -82,6 +91,55 @@ def get_virustotal_url_report(url):
         # Close the VirusTotal client session to avoid unclosed session errors
         client.close()
 
+def initiate_urlscan_unlisted_scan(url):
+    urlscanio_endpoint = 'https://urlscan.io/api/v1/scan/'
+    headers = {
+        'API-Key': URLSCAN_API_KEY,  # Replace with your URLScan.io API key
+    }
+
+    # Add "http://" if the URL doesn't already have a scheme (http:// or https://)
+    if not url.startswith('http://') and not url.startswith('https://'):
+        url = 'http://' + url
+
+    data = {
+        'url': url,
+        'visibility': 'unlisted',  # Set the scan visibility to unlisted
+    }
+
+    try:
+        # Send a POST request to URLScan.io to initiate an unlisted scan
+        response = requests.post(urlscanio_endpoint, headers=headers, json=data)
+        response.raise_for_status()
+
+        # Extract the scan ID from the response
+        scan_id = response.json().get('uuid', '')
+
+        return scan_id
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error initiating URLScan.io unlisted scan: {e}")
+        return None
+
+def get_whois_info(domain):
+    try:
+        whois_info = whois.whois(domain)
+        return whois_info
+    except Exception as e:
+        print(f"Error getting WHOIS information: {str(e)}")
+        return None
+
+def get_last_modified_date(url):
+    try:
+        response = requests.head(url, allow_redirects=True)
+        last_modified = response.headers.get('Last-Modified')
+        if last_modified:
+            return parsedate_to_datetime(last_modified).strftime('%Y-%m-%d')
+        else:
+            return None
+    except Exception as e:
+        print(f"Error getting Last-Modified date: {str(e)}")
+        return None
+
 # Get user input for the report content
 print("Enter the report content (type 'done' on a new line and press Enter to finish input):")
 
@@ -96,13 +154,13 @@ while True:
 # Concatenate the report lines
 report_content = '\n'.join(report_lines)
 
-# Extract URLs from the report
+# Extract URLs from the report and filter out email addresses
 urls_in_report = extract_urls(report_content)
 
 # Remove duplicates
 unique_urls = list(set(urls_in_report))
 
-# Fang, get VirusTotal report, and print the extracted unique URLs with numbering
+# Fang, get VirusTotal report, WHOIS info, and print the extracted unique URLs with numbering
 if unique_urls:
     print("Extracted URLs:")
     for i, url in enumerate(unique_urls, start=1):
@@ -113,8 +171,39 @@ if unique_urls:
         # Get the VirusTotal report for the URL
         vt_url_report = get_virustotal_url_report(fanged_url)
         if vt_url_report:
-            print(f"   VirusTotal URL Report: http://www.virustotal.com/gui/url/{vt_url_report.id}\n")
+            print(f"   VirusTotal URL Report: http://www.virustotal.com/gui/url/{vt_url_report.id}")
+            print(f"   URL Statistics: {vt_url_report.last_analysis_stats}")
         else:
-            print("   VirusTotal URL Report: Not available\n")
+            print("   VirusTotal URL Report: Not available")
+
+        # Initiate an unlisted scan on URLScan.io
+        scan_id = initiate_urlscan_unlisted_scan(fanged_url)
+        if scan_id:
+            print(f"   URLScan.io Unlisted Scan: https://urlscan.io/result/{scan_id}")
+
+        # Extract the domain from the URL and get WHOIS information
+        parsed_url = urllib.parse.urlparse(fanged_url)
+        domain = parsed_url.netloc
+        whois_info = get_whois_info(domain)
+        if whois_info:
+            # Extract the creation date and format it (handling possible lists)
+            creation_date = whois_info.creation_date[0] if isinstance(whois_info.creation_date, list) else whois_info.creation_date
+            creation_date = creation_date.strftime('%Y-%m-%d') if creation_date else "Not available"
+
+            expiration_date = whois_info.expiration_date[0] if isinstance(whois_info.expiration_date, list) else whois_info.expiration_date
+            expiration_date = expiration_date.strftime('%Y-%m-%d') if expiration_date else "Not available"
+
+            print(f"   WHOIS Info:")
+            if creation_date != "Not available":
+                print(f"   Creation Date: {creation_date}")
+            if expiration_date != "Not available":
+                print(f"   Expiration Date: {expiration_date}")
+
+        # Get the last modified date
+        last_modified_date = get_last_modified_date(fanged_url)
+        if last_modified_date:
+            print(f"   Last Modified Date: {last_modified_date}\n")
+        else:
+            print("   Last Modified Date: Not available\n")
 else:
     print("No URLs found in the report.")
