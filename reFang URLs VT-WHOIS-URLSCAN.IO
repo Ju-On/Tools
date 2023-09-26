@@ -1,0 +1,186 @@
+import urllib.parse
+import re
+import requests
+import whois
+from email.utils import parsedate_to_datetime
+import vt
+
+# Define your VirusTotal API key here
+VIRUSTOTAL_API_KEY = 'KEY'
+
+# Define your URLScan.io API key here
+URLSCAN_API_KEY = 'KEY'
+
+def fang_url(defanged_url):
+    # Replace '[.]' in the netloc with '.'
+    fanged_url = defanged_url.replace('[.]', '.')
+
+    # If the fanged URL doesn't start with 'http://', add 'http://'
+    if not fanged_url.startswith('http://'):
+        fanged_url = 'http://' + fanged_url
+
+    # Decode the path and query components
+    parsed_url = urllib.parse.urlparse(fanged_url)
+    path = urllib.parse.unquote(parsed_url.path)
+    query = urllib.parse.unquote(parsed_url.query)
+
+    # Reconstruct the fanged URL
+    fanged_url = urllib.parse.urlunparse((
+        parsed_url.scheme,
+        parsed_url.netloc,
+        path,
+        '',
+        query,
+        ''
+    ))
+
+    return fanged_url
+
+def extract_urls(text):
+    # Regular expression to match URLs, including email addresses with '[.]' in the domain
+    url_pattern = r'(?:https?://)?(?:www\.)?(?:[a-zA-Z0-9.-]+(?:\[\.\][a-zA-Z0-9.-]+)+|(?:[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\[\.\][a-zA-Z]{2,}))(?=\s|$)'
+
+    # Find all URLs in the text
+    urls = re.findall(url_pattern, text)
+
+    # Filter out URLs that contain '@' (email addresses)
+    filtered_urls = [url for url in urls if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\[\.\][a-zA-Z]{2,}$', url)]
+
+    return filtered_urls
+
+def get_virustotal_file_report(hash_value):
+    # Initialize the VirusTotal client
+    client = vt.Client(VIRUSTOTAL_API_KEY)
+
+    try:
+        # Get information about the file using its SHA-256, SHA-1, or MD5 hash
+        file_report = client.get_object(f"/files/{hash_value}")
+        return file_report
+
+    except vt.error.APIError as e:
+        # Handle the case when the file is not found on VirusTotal
+        if e.args[0] == 'NotFoundError':
+            return None
+        else:
+            raise e
+
+    finally:
+        # Close the VirusTotal client session to avoid unclosed session errors
+        client.close()
+
+def get_virustotal_url_report(url):
+    # Initialize the VirusTotal client
+    client = vt.Client(VIRUSTOTAL_API_KEY)
+
+    try:
+        # Generate the URL identifier using vt.url_id
+        url_id = vt.url_id(url)
+
+        # Get information about the URL
+        url_report = client.get_object(f"/urls/{url_id}")
+        return url_report
+
+    except vt.error.APIError as e:
+        # Handle the case when the URL is not found on VirusTotal
+        if e.args[0] == 'NotFoundError':
+            return None
+        else:
+            raise e
+
+    finally:
+        # Close the VirusTotal client session to avoid unclosed session errors
+        client.close()
+
+def initiate_urlscan_unlisted_scan(url):
+    urlscanio_endpoint = 'https://urlscan.io/api/v1/scan/'
+    headers = {
+        'API-Key': URLSCAN_API_KEY,  # Replace with your URLScan.io API key
+    }
+
+    # Add "http://" if the URL doesn't already have a scheme (http:// or https://)
+    if not url.startswith('http://') and not url.startswith('https://'):
+        url = 'http://' + url
+
+    data = {
+        'url': url,
+        'visibility': 'unlisted',  # Set the scan visibility to unlisted
+    }
+
+    try:
+        # Send a POST request to URLScan.io to initiate an unlisted scan
+        response = requests.post(urlscanio_endpoint, headers=headers, json=data)
+        response.raise_for_status()
+
+        # Extract the scan ID from the response
+        scan_id = response.json().get('uuid', '')
+
+        return scan_id
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error initiating URLScan.io unlisted scan: {e}")
+        return None
+
+def get_whois_info(domain):
+    try:
+        whois_info = whois.whois(domain)
+        return whois_info
+    except Exception as e:
+        print(f"Error getting WHOIS information: {str(e)}")
+        return None
+
+def get_last_modified_date(url):
+    try:
+        response = requests.head(url, allow_redirects=True)
+        last_modified = response.headers.get('Last-Modified')
+        if last_modified:
+            return parsedate_to_datetime(last_modified).strftime('%Y-%m-%d')
+        else:
+            return None
+    except Exception as e:
+        print(f"Error getting Last-Modified date: {str(e)}")
+        return None
+
+# Get user input for the report content
+print("Enter the report content (type 'done' on a new line and press Enter to finish input):")
+
+# Read user input for the report content
+report_lines = []
+while True:
+    line = input()
+    if line.strip().lower() == 'done':
+        break
+    report_lines.append(line)
+
+# Concatenate the report lines
+report_content = '\n'.join(report_lines)
+
+# Extract URLs from the report and filter out email addresses
+urls_in_report = extract_urls(report_content)
+
+# Remove duplicates
+unique_urls = list(set(urls_in_report))
+
+# Fang, get VirusTotal report, WHOIS info, and print the extracted unique URLs with numbering
+if unique_urls:
+    print("Extracted URLs:")
+    for i, url in enumerate(unique_urls, start=1):
+        fanged_url = fang_url(url)
+        print(f"{i}. Original Defanged URL: {url}")
+        print(f"   Fanged URL: {fanged_url}")
+
+        # Get the VirusTotal report for the URL
+        vt_url_report = get_virustotal_url_report(fanged_url)
+        if vt_url_report:
+            print(f"   VirusTotal URL Report: http://www.virustotal.com/gui/url/{vt_url_report.id}")
+            print(f"   URL Statistics: {vt_url_report.last_analysis_stats}")
+        else:
+            print("   VirusTotal URL Report: Not available")
+
+        # Initiate an unlisted scan on URLScan.io
+        scan_id = initiate_urlscan_unlisted_scan(fanged_url)
+        if scan_id:
+            print(f"   URLScan.io Unlisted Scan: https://urlscan.io/result/{scan_id}\n")
+        else:
+            print("   URLScan.io Unlisted Scan: Not available\n")
+
+        # Extract the domain from the URL and get WHOIS
