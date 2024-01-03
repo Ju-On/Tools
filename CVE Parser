@@ -1,7 +1,9 @@
 import re
+import webbrowser  # Added for opening URLs
 
-# Initialize an empty set to store unique CVE strings
-cve_set = set()
+# Initialize lists to store NVD and RedPacket URLs
+nvd_urls = []
+redpacket_urls = []
 
 print("Enter report lines (type 'gee' for gucci):")
 
@@ -19,18 +21,30 @@ while True:
     # Use re.findall to find all matching CVE strings in the report line
     cve_matches = re.findall(cve_pattern, report_line)
 
-    # Add the CVE strings found in this line to the cve_set
-    cve_set.update(cve_matches)
+    # Add the CVE strings found in this line to the corresponding lists
+    for cve in cve_matches:
+        nvd_urls.append(f"https://nvd.nist.gov/vuln/detail/{cve}")
+        redpacket_urls.append(f"https://www.redpacketsecurity.com/?s={cve}")
 
-# Convert the set back to a sorted list for printing
-cve_list = sorted(list(cve_set))
-
-# Print all the extracted unique CVE strings with clickable links to both URLs
-if cve_list:
+# Print all the extracted unique CVE strings
+if nvd_urls:
     print("CVE strings found in the report:")
-    for i, cve in enumerate(cve_list, 1):
-        cve_nvd_url = f"https://nvd.nist.gov/vuln/detail/{cve}"
-        cve_redpacket_url = f"https://www.redpacketsecurity.com/?s={cve}"
-        print(f"{i}. CVE: {cve} - NVD: {cve_nvd_url} - RedPacket: {cve_redpacket_url}")
+    for i, cve in enumerate(nvd_urls, 1):
+        print(f"{i}. CVE: {cve}")
+
+    open_option = input("Do you want to open all NVD links? (yes/no): ").strip().lower()
+    if open_option == 'yes':
+        for url in nvd_urls:
+            webbrowser.open(url)
+
+if redpacket_urls:
+    print("CVE strings found in the report:")
+    for i, cve in enumerate(redpacket_urls, 1):
+        print(f"{i}. CVE: {cve}")
+
+    open_option = input("Do you want to open all RedPacket links? (yes/no): ").strip().lower()
+    if open_option == 'yes':
+        for url in redpacket_urls:
+            webbrowser.open(url)
 else:
     print("No CVE strings found in the report.")
