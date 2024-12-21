@@ -10,7 +10,7 @@ sudo -l
 
 crontab -l
 
-## Post Exploitation
+##Post Exploitation
 
 history
 pwd
