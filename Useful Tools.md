@@ -1,4 +1,4 @@
-Windows compatiable | Analysis tools | Web Analysis tools | Web reference and source 
+# Windows compatiable | Analysis tools | Web Analysis tools | Web reference and source 
 
 ***********************
 
@@ -17,11 +17,17 @@ QR Code Scanner <https://qrcodescan.in/>
 Exploit database designed for Pentesting use cases and vulnerability researchers <Exploit-db.com>
 It is CVE compliant archive of publicly available exploits.
 
+NVD database of known exploits with ratings and links to advisories / githubs. <https://nvd.nist.gov/vuln/detail/CVE-2021-28169>
+
 Global Malware Hunting <https://app.any.run/>
 
 Virus Total <Reported IOCs inclusive of files and URLs?
 
 URL Void <URL reputation https://www.urlvoid.com/>
+
+abuseipdb cursory checker of IPs and websites <https://www.abuseipdb.com>
+
+CentraOps
 
 MalwareBazaar <Malware sample repository https://bazaar.abuse.ch/>
 
