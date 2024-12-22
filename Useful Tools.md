@@ -21,7 +21,7 @@ NVD database of known exploits with ratings and links to advisories / githubs. <
 
 Global Malware Hunting <https://app.any.run/>
 
-Virus Total <Reported IOCs inclusive of files and URLs?
+Virus Total <https://www.virustotal.com>
 
 URL Void <URL reputation https://www.urlvoid.com/>
 
