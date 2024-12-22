@@ -27,7 +27,7 @@ URL Void <URL reputation https://www.urlvoid.com/>
 
 abuseipdb cursory checker of IPs and websites <https://www.abuseipdb.com>
 
-CentraOps
+CentraOps online toolset for network troubleshooting and reconnaissance, including WHOIS lookups, DNS queries, and traceroute. <https://centralops.net/co/)> 
 
 MalwareBazaar <Malware sample repository https://bazaar.abuse.ch/>
 
