@@ -12,6 +12,8 @@ Process Hacker <Analyse processees during dynamic mode>
 
 QR Code Scanner <https://qrcodescan.in/>
 
+Burp Suite web and trafflic analysis tooling. Prior to any traffic captures, specific configurations is required in order for Burpe to efficiently capture any data for analysis. <https://thecybersecguru.com/tutorials/intercepting-web-traffic-with-burp-suite/>
+
 ***********************
 
 Exploit database designed for Pentesting use cases and vulnerability researchers <Exploit-db.com>
