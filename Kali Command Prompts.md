@@ -23,6 +23,8 @@ sudo -l
 
 crontab -l
 
+**Linux wget and curl commands**
+
 ## Windows Post Exploitation
 cd
 
@@ -46,7 +48,7 @@ nc -nlvp
 ## Directory hosting
 python -m SimpleHTTPServer
 
-## Linux wget and curl commands
 
-## Windows Certutil commands
+
+
 
