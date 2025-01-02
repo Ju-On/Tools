@@ -54,10 +54,15 @@ view memory > https > condition 7 and filter. Typcially viewable in the spawned 
 
 ***********************
 
-Post Enumeration 
-
+**Post Enumeration**
 LinPEAS
 
 WinPEAS
 
 PSPY
+
+Msfvenom
+
+***********************
+
+
