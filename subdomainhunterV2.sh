@@ -2,7 +2,7 @@
 ## httprobe to veriffy alive domains, dedup, strips https:// > alive.txt
 ## gowitness to screenshot > urlofdomain/screenshots
 ## http only, replace in httprobe section with `| httprobe -prefer-https -p http | grep http |`
-## add # infront of the subdomain tool to exclude scan
+## add # infront of the subdomain tool to exclude scan in events scan hangs, likely due to rate limiting
 
 #!/bin/bash
 
