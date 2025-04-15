@@ -78,7 +78,7 @@ show_progress
 
 # Step 6: Taking screenshots
 echo -e "${RED} [+] Taking screenshots ... ${RESET}"
-gowitness file -f "$subdomain_path/alive.txt" -P "$screenshot_path/" --no-http
+gowitness scan file -f "$subdomain_path/alive.txt" --screenshot-path "$screenshot_path/" --no-http
 current_step=$((current_step + 1))
 show_progress
 
