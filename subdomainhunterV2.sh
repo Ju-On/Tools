@@ -66,10 +66,10 @@ current_step=$((current_step + 1))
 show_progress
 
 # Step 4: Amass
-echo -e "${RED} [+] Running Amass for subdomain enumeration ... ${RESET}"
-amass enum -d "$domain" -o - >> "$subdomain_path/found.txt"  # Append Amass results to found.txt
-current_step=$((current_step + 1))
-show_progress
+##echo -e "${RED} [+] Running Amass for subdomain enumeration ... ${RESET}"
+##amass enum -d "$domain" -o - >> "$subdomain_path/found.txt"  # Append Amass results to found.txt
+##current_step=$((current_step + 1))
+##show_progress
 
 # Step 5: Checking live subdomains
 echo -e "${RED} [+] Checking what's alive ... ${RESET}"
