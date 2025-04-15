@@ -1,7 +1,7 @@
 ## subdomain hunting with amass, assetfinder, subfinder into found.txt
 ## httprobe to veriffy alive domains, dedup, strips https:// > alive.txt
 ## gowitness to screenshot > urlofdomain/screenshots
-## http only, replace in httprove section with `| httprobe -prefer-https -p http | grep http |` 
+## http only, replace in httprove section with `| httprobe -prefer-https -p http | grep http |`
 
 #!/bin/bash
 
@@ -25,20 +25,62 @@ for path in "$info_path" "$subdomain_path" "$screenshot_path"; do
     fi
 done
 
+# Total number of steps for progress calculation
+total_steps=6
+current_step=0
+
+# Function to display progress
+show_progress() {
+    percent=$((current_step * 100 / total_steps))
+    progress_bar="["
+
+    # Fill progress bar
+    for ((i=0; i<percent/2; i++)); do
+        progress_bar="${progress_bar}="
+    done
+    for ((i=percent/2; i<50; i++)); do
+        progress_bar="${progress_bar} "
+    done
+
+    progress_bar="${progress_bar}] ${percent}%"
+    echo -ne "$progress_bar\r"
+}
+
+# Step 1: Whois lookup
 echo -e "${RED} [+] Checking who it is ... ${RESET}"
 whois "$domain" > "$info_path/whois.txt"
+current_step=$((current_step + 1))
+show_progress
 
+# Step 2: Subfinder
 echo -e "${RED} [+] Launching subfinder ... ${RESET}"
 subfinder -d "$domain" > "$subdomain_path/found.txt"
+current_step=$((current_step + 1))
+show_progress
 
+# Step 3: Assetfinder
 echo -e "${RED} [+] Running assetfinder ... ${RESET}"
 assetfinder "$domain" | grep "$domain" >> "$subdomain_path/found.txt"
+current_step=$((current_step + 1))
+show_progress
 
+# Step 4: Amass
 echo -e "${RED} [+] Running Amass for subdomain enumeration ... ${RESET}"
 amass enum -d "$domain" -o - >> "$subdomain_path/found.txt"  # Append Amass results to found.txt
+current_step=$((current_step + 1))
+show_progress
 
+# Step 5: Checking live subdomains
 echo -e "${RED} [+] Checking what's alive ... ${RESET}"
 cat "$subdomain_path/found.txt" | grep "$domain" | sort -u | httprobe -prefer-https | grep https | sed 's/https\?:\/\///' | tee -a "$subdomain_path/alive.txt"
+current_step=$((current_step + 1))
+show_progress
 
+# Step 6: Taking screenshots
 echo -e "${RED} [+] Taking screenshots ... ${RESET}"
 gowitness file -f "$subdomain_path/alive.txt" -P "$screenshot_path/" --no-http
+current_step=$((current_step + 1))
+show_progress
+
+echo -e "${RESET}\nCompleted all steps!"
+
