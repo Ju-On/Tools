@@ -1,6 +1,7 @@
 ## subdomain hunting with amass, assetfinder, subfinder into found.txt
 ## httprobe to veriffy alive domains, dedup, strips https:// > alive.txt
 ## gowitness to screenshot > urlofdomain/screenshots
+## http only `| httprobe -prefer-https -p http | grep http |`
 
 #!/bin/bash
 
