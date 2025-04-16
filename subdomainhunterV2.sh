@@ -1,7 +1,7 @@
 ## subdomain hunting with amass, assetfinder, subfinder into found.txt
 ## httprobe to verify alive domains, dedup, strips https:// > alive.txt
-## gowitness to screenshot > urlofdomain/screenshots
 ## http only, replace in httprobe section with `| httprobe -prefer-https -p http | grep http |`
+## gowitness to screenshot > urlofdomain/screenshots
 ## add # infront of the subdomain tool to exclude scan in events scan hangs, likely due to rate limiting
 ## Example: ./subdomainhunterV2.sh test.com
 
