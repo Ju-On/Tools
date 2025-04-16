@@ -1,6 +1,7 @@
 ## single subdomain hunter
 ## comment out between amass or assetfinder
 ## httprobe and dedup
+## Example: ./subdomainhunter.sh test.com
 
 #!/bin/bash
 
